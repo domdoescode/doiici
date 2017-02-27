@@ -1,0 +1,3 @@
+package: github.com/domudall/doiici
+import:
+- package: github.com/nlopes/slack
