@@ -15,7 +15,11 @@ import (
 	_ "github.com/domudall/doiici/plugins/ping"
 )
 
-var listeners = make(map[string]plugins.Plugin)
+var (
+	listeners = make(map[string]plugins.Plugin)
+
+	dmChar = []byte("D")[0]
+)
 
 func main() {
 	log.Println("loading plugins")
@@ -56,17 +60,28 @@ func main() {
 				break
 			}
 
-			if !strings.HasPrefix(ev.Text, fmt.Sprintf("<@%s>", info.User.ID)) {
+			// If the first part of the message is @<botname>, it's a message at the bot
+			atBot := strings.HasPrefix(ev.Text, fmt.Sprintf("<@%s>", info.User.ID))
+
+			// If channel starts with "D", it's a direct message to the bot
+			toBot := ev.Channel[0] == dmChar
+
+			if !atBot && !toBot {
 				break
 			}
 
-			msgParts := strings.SplitN(ev.Text, " ", 3)
-			if len(msgParts) < 2 {
+			partSplitCount := 2
+			if atBot {
+				partSplitCount = partSplitCount + 1
+			}
+
+			msgParts := strings.SplitN(ev.Text, " ", partSplitCount)
+			if len(msgParts) < partSplitCount-1 {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Yes?", ev.Channel))
 				break
 			}
 
-			plugin := strings.ToLower(msgParts[1])
+			plugin := strings.ToLower(msgParts[partSplitCount-2])
 			p, ok := listeners[plugin]
 			if !ok {
 				msg := fmt.Sprintf("Sorry, the %q plugin doesn't seem to be installed.", plugin)
@@ -75,8 +90,8 @@ func main() {
 			}
 
 			command := ""
-			if len(msgParts) == 3 {
-				command = msgParts[2]
+			if len(msgParts) == partSplitCount {
+				command = msgParts[partSplitCount-1]
 			}
 
 			msg := p.Match(command)
