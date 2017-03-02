@@ -60,6 +60,11 @@ func main() {
 				break
 			}
 
+			// If the message is from the bot itself, ignore
+			if ev.User == info.User.ID {
+				break
+			}
+
 			// If the first part of the message is @<botname>, it's a message at the bot
 			atBot := strings.HasPrefix(ev.Text, fmt.Sprintf("<@%s>", info.User.ID))
 
