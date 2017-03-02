@@ -70,13 +70,18 @@ func main() {
 				break
 			}
 
-			msgParts := strings.SplitN(ev.Text, " ", 3)
-			if len(msgParts) < 2 {
+			partSplitCount := 2
+			if atBot {
+				partSplitCount = partSplitCount + 1
+			}
+
+			msgParts := strings.SplitN(ev.Text, " ", partSplitCount)
+			if len(msgParts) < partSplitCount-1 {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Yes?", ev.Channel))
 				break
 			}
 
-			plugin := strings.ToLower(msgParts[1])
+			plugin := strings.ToLower(msgParts[partSplitCount-2])
 			p, ok := listeners[plugin]
 			if !ok {
 				msg := fmt.Sprintf("Sorry, the %q plugin doesn't seem to be installed.", plugin)
@@ -85,8 +90,8 @@ func main() {
 			}
 
 			command := ""
-			if len(msgParts) == 3 {
-				command = msgParts[2]
+			if len(msgParts) == partSplitCount {
+				command = msgParts[partSplitCount-1]
 			}
 
 			msg := p.Match(command)
