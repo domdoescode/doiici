@@ -15,7 +15,11 @@ import (
 	_ "github.com/domudall/doiici/plugins/ping"
 )
 
-var listeners = make(map[string]plugins.Plugin)
+var (
+	listeners = make(map[string]plugins.Plugin)
+
+	dmChar = []byte("D")[0]
+)
 
 func main() {
 	log.Println("loading plugins")
@@ -56,7 +60,13 @@ func main() {
 				break
 			}
 
-			if !strings.HasPrefix(ev.Text, fmt.Sprintf("<@%s>", info.User.ID)) {
+			// If the first part of the message is @<botname>, it's a message at the bot
+			atBot := strings.HasPrefix(ev.Text, fmt.Sprintf("<@%s>", info.User.ID))
+
+			// If channel starts with "D", it's a direct message to the bot
+			toBot := ev.Channel[0] == dmChar
+
+			if !atBot && !toBot {
 				break
 			}
 
