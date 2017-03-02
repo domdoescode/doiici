@@ -99,8 +99,13 @@ func main() {
 				command = msgParts[partSplitCount-1]
 			}
 
-			msg := p.Match(command)
-			rtm.SendMessage(rtm.NewOutgoingMessage(msg, ev.Channel))
+			params := slack.NewPostMessageParameters()
+			params.AsUser = true
+
+			msg := p.Match(command, params)
+			params.Attachments = msg.Attachments
+
+			api.PostMessage(ev.Channel, msg.Text, params)
 
 		case *slack.RTMError:
 			log.Println(fmt.Sprintf("Error: %s\n", ev.Error()))
